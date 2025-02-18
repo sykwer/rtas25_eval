@@ -20,12 +20,12 @@ rclcpp_components_register_nodes(subscriber_node "SubscriberNode")
 add_executable(publisher_node_exec src/publisher_node.cpp)
 ament_target_dependencies(publisher_node_exec rclcpp rclcpp_components std_msgs rclcpp_component_container_callback_isolated)
 target_include_directories(publisher_node_exec PRIVATE ${rclcpp_component_container_callback_isolated_INCLUDE_DIRS})
-target_link_libraries(publisher_node_exec publisher_node)  # publisher_node ライブラリをリンク
+target_link_libraries(publisher_node_exec publisher_node)
 
 add_executable(subscriber_node_exec src/subscriber_node.cpp)
 ament_target_dependencies(subscriber_node_exec rclcpp rclcpp_components std_msgs rclcpp_component_container_callback_isolated)
 target_include_directories(subscriber_node_exec PRIVATE ${rclcpp_component_container_callback_isolated_INCLUDE_DIRS})
-target_link_libraries(subscriber_node_exec subscriber_node)  # subscriber_node ライブラリをリンク
+target_link_libraries(subscriber_node_exec subscriber_node)
 
 install(TARGETS
   publisher_node
