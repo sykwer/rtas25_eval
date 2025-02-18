@@ -56,6 +56,17 @@ def create_container(context, *args, **kwargs):
             output='screen',
             condition=UnlessCondition(LaunchConfiguration('separate_process'))
         )
+    elif executor == 'isolated':
+        executable = 'component_container_callback_isolated'
+        container = ComposableNodeContainer(
+            name='container',
+            namespace='',
+            package='rclcpp_component_container_callback_isolated',
+            executable=executable,
+            composable_node_descriptions=create_composable_nodes(),
+            output='screen',
+            condition=UnlessCondition(LaunchConfiguration('separate_process'))
+        )
     else:
         executable = 'component_container'
         container = ComposableNodeContainer(
