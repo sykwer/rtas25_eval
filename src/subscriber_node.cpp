@@ -3,8 +3,8 @@
 #include <rclcpp_components/register_node_macro.hpp>
 #include <vector>
 #include <string>
-#include <thread>  // hardware_concurrency の取得
-#include <unistd.h>  // getpid() のために追加
+#include <thread>
+#include <unistd.h>
 #include "static_callback_isolated_executor.hpp"
 
 class SubscriberNode : public rclcpp::Node
@@ -13,14 +13,13 @@ public:
     explicit SubscriberNode(const rclcpp::NodeOptions & options)
         : Node("subscriber_node", options)
     {
-        // パラメータを宣言
         this->declare_parameter("callback_group_count", 1);
         this->declare_parameter("executor_type", "single");
 
         this->get_parameter("callback_group_count", callback_group_count_);
         this->get_parameter("executor_type", executor_type_);
 
-        pid_ = getpid();  // プロセスIDを取得
+        pid_ = getpid();
 
         for (int i = 0; i < callback_group_count_; ++i)
         {
@@ -55,7 +54,6 @@ private:
     std::string executor_type_;
 };
 
-// Composable Nodeとして登録
 RCLCPP_COMPONENTS_REGISTER_NODE(SubscriberNode)
 
 int main(int argc, char *argv[])

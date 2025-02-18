@@ -3,8 +3,8 @@
 #include <rclcpp_components/register_node_macro.hpp>
 #include <vector>
 #include <string>
-#include <thread>  // hardware_concurrency の取得
-#include <unistd.h>  // getpid() のために追加
+#include <thread>
+#include <unistd.h>
 #include "static_callback_isolated_executor.hpp"
 
 class PublisherNode : public rclcpp::Node
@@ -13,7 +13,6 @@ public:
     explicit PublisherNode(const rclcpp::NodeOptions & options)
         : Node("publisher_node", options)
     {
-        // パラメータを宣言
         this->declare_parameter("callback_group_count", 1);
         this->declare_parameter("timer_period", 1000);
         this->declare_parameter("executor_type", "single");
@@ -22,7 +21,7 @@ public:
         this->get_parameter("timer_period", timer_period_);
         this->get_parameter("executor_type", executor_type_);
 
-        pid_ = getpid();  // プロセスIDを取得
+        pid_ = getpid();
 
         for (int i = 0; i < callback_group_count_; ++i)
         {
@@ -61,24 +60,19 @@ private:
     std::string executor_type_;
 };
 
-// Composable Nodeとして登録
 RCLCPP_COMPONENTS_REGISTER_NODE(PublisherNode)
 
 int main(int argc, char *argv[])
 {
     rclcpp::init(argc, argv);
 
-    // ノードを作成
     auto node = std::make_shared<PublisherNode>(rclcpp::NodeOptions());
 
-    // callback_group_count を取得
     int callback_group_count;
     node->get_parameter("callback_group_count", callback_group_count);
 
-    // hardware concurrency を考慮してスレッド数を決定
     int thread_num = std::min(callback_group_count, static_cast<int>(std::thread::hardware_concurrency()));
 
-    // エグゼキュータを選択
     std::string executor_type;
     node->get_parameter("executor_type", executor_type);
 

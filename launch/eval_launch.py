@@ -8,12 +8,10 @@ from launch_ros.actions import ComposableNodeContainer, Node
 from launch_ros.descriptions import ComposableNode
 
 def get_limited_thread_num(callback_group_count):
-    """callback_group_count * 2 にしつつ、最大スレッド数 (hardware concurrency) を超えないよう制限"""
-    max_threads = os.cpu_count()  # ハードウェアの最大スレッド数
-    return min(callback_group_count * 2, max_threads)  # 制限を適用
+    max_threads = os.cpu_count()
+    return min(callback_group_count * 2, max_threads)
 
 def create_composable_nodes():
-    """PublisherNode と SubscriberNode の ComposableNode を作成"""
     return [
         ComposableNode(
             package='rtas25_eval',
@@ -37,11 +35,9 @@ def create_composable_nodes():
     ]
 
 def create_container(context, *args, **kwargs):
-    """ComposableNodeContainer を作成"""
     executor = LaunchConfiguration('executor').perform(context)
     callback_group_count = int(LaunchConfiguration('callback_group_count').perform(context))
 
-    # スレッド数の制限を適用
     thread_num = get_limited_thread_num(callback_group_count)
 
     if executor == 'multi':
@@ -51,7 +47,7 @@ def create_container(context, *args, **kwargs):
             namespace='',
             package='rclcpp_components',
             executable=executable,
-            parameters=[{'thread_num': thread_num}],  # 制限適用後のスレッド数を設定
+            parameters=[{'thread_num': thread_num}],
             composable_node_descriptions=create_composable_nodes(),
             output='screen',
             condition=UnlessCondition(LaunchConfiguration('separate_process'))
@@ -81,7 +77,6 @@ def create_container(context, *args, **kwargs):
     return [container]
 
 def create_separate_nodes():
-    """別プロセスで PublisherNode と SubscriberNode を実行する Node を作成"""
     return [
         Node(
             package='rtas25_eval',
@@ -109,7 +104,6 @@ def create_separate_nodes():
     ]
 
 def generate_launch_description():
-    """Launch ファイルのエントリポイント"""
     return LaunchDescription([
         DeclareLaunchArgument(
             'callback_group_count',
@@ -133,5 +127,5 @@ def generate_launch_description():
         ),
         LogInfo(msg=['Executor mode: ', LaunchConfiguration('executor')]),
         OpaqueFunction(function=create_container),
-        *create_separate_nodes()  # 別プロセスノードも追加
+        *create_separate_nodes()
     ])
