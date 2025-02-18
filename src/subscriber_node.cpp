@@ -5,6 +5,7 @@
 #include <string>
 #include <thread>  // hardware_concurrency の取得
 #include <unistd.h>  // getpid() のために追加
+#include "static_callback_isolated_executor.hpp"
 
 class SubscriberNode : public rclcpp::Node
 {
@@ -68,24 +69,33 @@ int main(int argc, char *argv[])
 
     int thread_num = std::min(callback_group_count, static_cast<int>(std::thread::hardware_concurrency()));
 
-    rclcpp::Executor::SharedPtr executor;
     std::string executor_type;
     node->get_parameter("executor_type", executor_type);
 
     if (executor_type == "multi")
     {
-        executor = std::make_shared<rclcpp::executors::MultiThreadedExecutor>(
+        auto executor = std::make_shared<rclcpp::executors::MultiThreadedExecutor>(
             rclcpp::ExecutorOptions(), thread_num);
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Using MultiThreadedExecutor with %d threads", thread_num);
+
+        executor->add_node(node);
+        executor->spin();
+    }
+    else if (executor_type == "isolated") {
+        auto executor = std::make_shared<StaticCallbackIsolatedExecutor>();
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Using StaticCallbackIsolatedExecutor");
+
+        executor->add_node(node);
+        executor->spin();
     }
     else
     {
-        executor = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
+        auto executor = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Using SingleThreadedExecutor");
-    }
 
-    executor->add_node(node);
-    executor->spin();
+        executor->add_node(node);
+        executor->spin();
+    }
 
     rclcpp::shutdown();
     return 0;
